@@ -1,19 +1,22 @@
 package entities;
 
-import immutable.Position;
+import containers.Position;
 
 public class Mountain extends Entity
 {
     public Mountain(String name, Position position)
     {
-        super(name, position, 2);
+        super(name, position, 2, false);
+    }
+
+    public Mountain(Mountain mountain)
+    {
+        super(mountain.name, new Position(mountain.position), mountain.health, false);
     }
 
     @Override
-    public void bumpAction(Entity entity)
+    public Entity makeCopy()
     {
-        entity.setHealth(entity.getHealth() - 1);
-        health--;
+        return new Mountain(this);
     }
-
 }

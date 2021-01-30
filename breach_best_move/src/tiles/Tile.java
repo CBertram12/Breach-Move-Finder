@@ -11,6 +11,18 @@ public class Tile
         this.entity = entity;
     }
 
+    public Tile(Tile tile, Integer copyBit)
+    {
+        if (tile.getEntity() == null)
+        {
+            entity = null;
+        }
+        else
+        {
+            this.entity = tile.getEntity().makeCopy();
+        }
+    }
+
     public Entity getEntity()
     {
         return entity;
