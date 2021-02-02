@@ -25,7 +25,17 @@ public class Wasp extends Vek
         int damage = 1;
         
         Position targetPosition = new Position(position.getX() + relative_x, position.getY() + relative_y);
-        Entity target = gameBoard.getEntity(targetPosition);
+        
+        Entity target = null;
+        if (gameBoard.checkValidPosition(targetPosition))
+        {
+            target = gameBoard.getEntity(targetPosition);
+
+        }
+        else
+        {
+            return report;
+        }
         
         if (target != null)
         {

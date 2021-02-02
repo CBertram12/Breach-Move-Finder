@@ -10,17 +10,17 @@ import containers.Position;
 import containers.TargetDirection;
 import containers.Utilities;
 
-public class PunchMech extends PlayerMech
+public class ShootMech extends PlayerMech
 {
     
-    public PunchMech(Position position)
+    public ShootMech(Position position)
     {
-        super("Punch Mech", position, 3, 3, true, true);
+        super("Shoot Mech", position, 3, 3, true, true);
     }
 
-    public PunchMech(PunchMech punchMech)
+    public ShootMech(ShootMech shootMech)
     {
-        super(punchMech.name, new Position(punchMech.position), punchMech.maxMoves, punchMech.health, punchMech.active, punchMech.hasMoves);
+        super(shootMech.name, new Position(shootMech.position), shootMech.maxMoves, shootMech.health, shootMech.active, shootMech.hasMoves);
     }
 
     @Override
@@ -37,7 +37,7 @@ public class PunchMech extends PlayerMech
         Entity target = gameBoard.getEntity(targetPosition);
         AttackReport report = new AttackReport();
         
-        int damage = 2;
+        int damage = 1;
         
         target.health -= damage;
         
@@ -75,29 +75,47 @@ public class PunchMech extends PlayerMech
     {
         List<Position> possibleTargetLocations = new ArrayList<Position>();
         
-        possibleTargetLocations.add(new Position(position.getX() + 1, position.getY()));
-        possibleTargetLocations.add(new Position(position.getX(), position.getY() + 1));
-        possibleTargetLocations.add(new Position(position.getX() - 1, position.getY()));
-        possibleTargetLocations.add(new Position(position.getX(), position.getY() - 1));
-        
-        List<Position> targetLocations = new ArrayList<Position>();
-        
-        for (Position possiblePosition : possibleTargetLocations)
+        for (int i = position.getX(); i < gameBoard.getLength(); i++)
         {
-            try
+            Position possibleTarget = new Position(i, position.getY());
+            if (gameBoard.getEntity(possibleTarget) != null && !(gameBoard.getEntity(possibleTarget) instanceof PlayerMech))
             {
-                if (gameBoard.getEntity(possiblePosition) != null && !(gameBoard.getEntity(possiblePosition) instanceof PlayerMech))
-                {
-                    targetLocations.add(possiblePosition);
-                }
-            }
-            catch (IndexOutOfBoundsException e)
-            {
- 
+                possibleTargetLocations.add(possibleTarget);
+                break;
             }
         }
         
-        return targetLocations;
+        for (int i = position.getX(); i >= 0; i--)
+        {
+            Position possibleTarget = new Position(i, position.getY());
+            if (gameBoard.getEntity(possibleTarget) != null && !(gameBoard.getEntity(possibleTarget) instanceof PlayerMech))
+            {
+                possibleTargetLocations.add(possibleTarget);
+                break;
+            }
+        }
+        
+        for (int i = position.getY(); i < gameBoard.getHeight(); i++)
+        {
+            Position possibleTarget = new Position(position.getX(), i);
+            if (gameBoard.getEntity(possibleTarget) != null && !(gameBoard.getEntity(possibleTarget) instanceof PlayerMech))
+            {
+                possibleTargetLocations.add(possibleTarget);
+                break;
+            }
+        }
+        
+        for (int i = position.getY(); i >= 0 ; i--)
+        {
+            Position possibleTarget = new Position(position.getX(), i);
+            if (gameBoard.getEntity(possibleTarget) != null && !(gameBoard.getEntity(possibleTarget) instanceof PlayerMech))
+            {
+                possibleTargetLocations.add(possibleTarget);
+                break;
+            }
+        }
+        
+        return possibleTargetLocations;
     }
     
     @Override
@@ -199,7 +217,7 @@ public class PunchMech extends PlayerMech
     @Override
     public Entity makeCopy()
     {
-        return new PunchMech(this);
+        return new ShootMech(this);
     }
 
 

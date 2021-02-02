@@ -52,7 +52,7 @@ public class GameBoard
         }
     }
     
-    public AttackReport moveEntity(Position startPosition, Position endPosition)
+    public AttackReport changeEntityPosition(Position startPosition, Position endPosition)
     {
         AttackReport report = new AttackReport();
         if (startPosition.equals(endPosition))
@@ -63,19 +63,61 @@ public class GameBoard
         {
             Entity entity1 = gameLayout[startPosition.getX()][startPosition.getY()].getEntity();
             
-            if (gameLayout[endPosition.getX()][endPosition.getY()].getEntity() == null)
+            if (checkValidPosition(endPosition))
             {
-                gameLayout[endPosition.getX()][endPosition.getY()].setEntity(entity1);
-                entity1.setPosition(new Position(endPosition.getX(), endPosition.getY()));
-                gameLayout[startPosition.getX()][startPosition.getY()].setEntity(null);
-            }
-            else
-            {
-                Entity entity2 = gameLayout[endPosition.getX()][endPosition.getY()].getEntity();
-                report = entity2.bumpAction(entity1);
+                if (gameLayout[endPosition.getX()][endPosition.getY()].getEntity() == null)
+                {
+                    gameLayout[endPosition.getX()][endPosition.getY()].setEntity(entity1);
+                    entity1.setPosition(new Position(endPosition.getX(), endPosition.getY()));
+                    gameLayout[startPosition.getX()][startPosition.getY()].setEntity(null);
+                }
+                else
+                {
+                    Entity entity2 = gameLayout[endPosition.getX()][endPosition.getY()].getEntity();
+                    report = entity2.bumpAction(entity1);
+                } 
             }
         }
         return report;
+    }
+    
+    public PlayerMech makeUnitMove(Position startPosition, Position endPosition)
+    {
+        if (startPosition.equals(endPosition))
+        {
+            return (PlayerMech) gameLayout[startPosition.getX()][startPosition.getY()].getEntity();
+        }
+        if (gameLayout[startPosition.getX()][startPosition.getY()].getEntity() != null)
+        {
+            PlayerMech mech = (PlayerMech) gameLayout[startPosition.getX()][startPosition.getY()].getEntity();
+            
+            if (checkValidPosition(endPosition))
+            {
+                if (gameLayout[endPosition.getX()][endPosition.getY()].getEntity() == null)
+                {
+                    gameLayout[endPosition.getX()][endPosition.getY()].setEntity(mech);
+                    mech.move(new Position(endPosition.getX(), endPosition.getY()));
+                    gameLayout[startPosition.getX()][startPosition.getY()].setEntity(null);
+                    return mech;
+                }
+            }
+        }
+        
+        return null;
+    }
+    
+    public AttackReport makeUnitAttack(Position unitPosition, Position attackPosition)
+    {
+        AttackReport blankReport = new AttackReport();
+        
+        if (gameLayout[unitPosition.getX()][unitPosition.getY()].getEntity() != null)
+        {
+            PlayerMech mech = (PlayerMech) gameLayout[unitPosition.getX()][unitPosition.getY()].getEntity();
+            
+            return mech.attack(this, attackPosition);
+        }
+        
+        return blankReport;
     }
     
     public List<PlayerMech> getActiveMechs()
@@ -124,5 +166,28 @@ public class GameBoard
         Collections.sort(vekList);
         
         return vekList;
+    }
+    
+    public int getLength()
+    {
+        return gameLayout.length;
+    }
+    
+    public int getHeight()
+    {
+        return gameLayout[0].length;
+    }
+    
+    public boolean checkValidPosition(Position position)
+    {
+        try 
+        {
+            Tile test = gameLayout[position.getX()][position.getY()];
+        }
+        catch (IndexOutOfBoundsException e)
+        {
+            return false;
+        }
+        return true;
     }
 }

@@ -10,17 +10,17 @@ import containers.Position;
 import containers.TargetDirection;
 import containers.Utilities;
 
-public class PunchMech extends PlayerMech
+public class ArtilleryMech extends PlayerMech
 {
     
-    public PunchMech(Position position)
+    public ArtilleryMech(Position position)
     {
-        super("Punch Mech", position, 3, 3, true, true);
+        super("Artillery Mech", position, 3, 3, true, true);
     }
 
-    public PunchMech(PunchMech punchMech)
+    public ArtilleryMech(ArtilleryMech artilleryMech)
     {
-        super(punchMech.name, new Position(punchMech.position), punchMech.maxMoves, punchMech.health, punchMech.active, punchMech.hasMoves);
+        super(artilleryMech.name, new Position(artilleryMech.position), artilleryMech.maxMoves, artilleryMech.health, artilleryMech.active, artilleryMech.hasMoves);
     }
 
     @Override
@@ -37,35 +37,51 @@ public class PunchMech extends PlayerMech
         Entity target = gameBoard.getEntity(targetPosition);
         AttackReport report = new AttackReport();
         
-        int damage = 2;
+        int damage = 1;
         
         target.health -= damage;
         
         Utilities.writeReport(report, target, damage);
         
-        if (target instanceof Vek)
+        List<Position> possibleTargetLocations = new ArrayList<Position>();
+        
+        possibleTargetLocations.add(new Position(targetPosition.getX() + 1, targetPosition.getY()));
+        possibleTargetLocations.add(new Position(targetPosition.getX(), targetPosition.getY() + 1));
+        possibleTargetLocations.add(new Position(targetPosition.getX() - 1, targetPosition.getY()));
+        possibleTargetLocations.add(new Position(targetPosition.getX(), targetPosition.getY() - 1));
+        
+        for (Position pushLocation : possibleTargetLocations)
         {
-            TargetDirection direction = Utilities.determineDirection(position, targetPosition);
-            
-            Position bumpLocation = null;
-            switch (direction)
+            if (!gameBoard.checkValidPosition(pushLocation))
             {
-                case UP:
-                    bumpLocation = new Position(targetPosition.getX(), targetPosition.getY() + 1);
-                    break;
-                case DOWN:
-                    bumpLocation = new Position(targetPosition.getX(), targetPosition.getY() - 1);
-                    break;
-                case RIGHT:
-                    bumpLocation = new Position(targetPosition.getX() + 1, targetPosition.getY());
-                    break;
-                case LEFT:
-                    bumpLocation = new Position(targetPosition.getX() - 1, targetPosition.getY());
-                    break;
+                continue;
             }
-            
-            report.combine(gameBoard.changeEntityPosition(targetPosition, bumpLocation));
+            Entity bumpTarget = gameBoard.getEntity(pushLocation);
+            if (bumpTarget != null && !(bumpTarget instanceof Stationary))
+            {
+                TargetDirection direction = Utilities.determineDirection(targetPosition, pushLocation);
+                
+                Position bumpLocation = null;
+                switch (direction)
+                {
+                    case UP:
+                        bumpLocation = new Position(pushLocation.getX(), pushLocation.getY() + 1);
+                        break;
+                    case DOWN:
+                        bumpLocation = new Position(pushLocation.getX(), pushLocation.getY() - 1);
+                        break;
+                    case RIGHT:
+                        bumpLocation = new Position(pushLocation.getX() + 1, pushLocation.getY());
+                        break;
+                    case LEFT:
+                        bumpLocation = new Position(pushLocation.getX() - 1, pushLocation.getY());
+                        break;
+                }
+                
+                report.combine(gameBoard.changeEntityPosition(pushLocation, bumpLocation));
+            }
         }
+        
         
         return report;
     }
@@ -75,29 +91,43 @@ public class PunchMech extends PlayerMech
     {
         List<Position> possibleTargetLocations = new ArrayList<Position>();
         
-        possibleTargetLocations.add(new Position(position.getX() + 1, position.getY()));
-        possibleTargetLocations.add(new Position(position.getX(), position.getY() + 1));
-        possibleTargetLocations.add(new Position(position.getX() - 1, position.getY()));
-        possibleTargetLocations.add(new Position(position.getX(), position.getY() - 1));
-        
-        List<Position> targetLocations = new ArrayList<Position>();
-        
-        for (Position possiblePosition : possibleTargetLocations)
+        for (int i = position.getX() + 1; i < gameBoard.getLength(); i++)
         {
-            try
+            Position possibleTarget = new Position(i, position.getY());
+            if (gameBoard.getEntity(possibleTarget) != null && !(gameBoard.getEntity(possibleTarget) instanceof PlayerMech))
             {
-                if (gameBoard.getEntity(possiblePosition) != null && !(gameBoard.getEntity(possiblePosition) instanceof PlayerMech))
-                {
-                    targetLocations.add(possiblePosition);
-                }
-            }
-            catch (IndexOutOfBoundsException e)
-            {
- 
+                possibleTargetLocations.add(possibleTarget);
             }
         }
         
-        return targetLocations;
+        for (int i = position.getX() - 1; i >= 0; i--)
+        {
+            Position possibleTarget = new Position(i, position.getY());
+            if (gameBoard.getEntity(possibleTarget) != null && !(gameBoard.getEntity(possibleTarget) instanceof PlayerMech))
+            {
+                possibleTargetLocations.add(possibleTarget);
+            }
+        }
+        
+        for (int i = position.getY() + 1; i < gameBoard.getHeight(); i++)
+        {
+            Position possibleTarget = new Position(position.getX(), i);
+            if (gameBoard.getEntity(possibleTarget) != null && !(gameBoard.getEntity(possibleTarget) instanceof PlayerMech))
+            {
+                possibleTargetLocations.add(possibleTarget);
+            }
+        }
+        
+        for (int i = position.getY() - 1; i >= 0 ; i--)
+        {
+            Position possibleTarget = new Position(position.getX(), i);
+            if (gameBoard.getEntity(possibleTarget) != null && !(gameBoard.getEntity(possibleTarget) instanceof PlayerMech))
+            {
+                possibleTargetLocations.add(possibleTarget);
+            }
+        }
+        
+        return possibleTargetLocations;
     }
     
     @Override
@@ -199,7 +229,7 @@ public class PunchMech extends PlayerMech
     @Override
     public Entity makeCopy()
     {
-        return new PunchMech(this);
+        return new ArtilleryMech(this);
     }
 
 
